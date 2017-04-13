@@ -1,7 +1,7 @@
 {
- "hostname":"nas3.mgmt",
+ "hostname":"nas.mgmt",
  "ntphost":"192.168.121.1",
  "voldisk":"md1",
  "interfaces":"",
- "port":"4948"
+ "port":"4949"
 }
