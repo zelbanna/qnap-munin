@@ -18,17 +18,36 @@ import time
 from socket import *
 from thread import *
 from subprocess import check_output
+from os import path
+from json import load as jload
 
-if len(sys.argv) < 3:
- print sys.argv[0] + " <name to advertise> <ntp peer> <raid volume>"
- sys.exit(1)
+wd = path.dirname(path.realpath(__file__))
 
-HOSTNAME = sys.argv[1]
-NTPHOST = sys.argv[2]
-VOLDISK = sys.argv[3]
-HOST = ''   # Symbolic name meaning all available interfaces
-PORT = 4949 # Arbitrary non-privileged port
-VERSION = "2.0"
+if len(sys.argv) == 2 and sys.argv[1] == 'install':
+ print "Reads settings.json in current directory"
+ print "Add following to /etc/config/qpkg.conf:"
+ print ""
+ print "[munin]"
+ print "Name = munin"      
+ print "Class = null"
+ print "Version = 0.1"
+ print "Author = zeb"
+ print "Date = 2016-11-21"
+ print "Shell = {}/{}".format(wd,path.basename(__file__))
+ print "Install_Path = {}".format(wd)
+ print "Enable = TRUE"
+ sys.exit(0)
+
+#
+# settings.json must contain the following vars
+#
+with open(wd + "/settings.json",'r') as f:
+ config = jload(f)
+ HOSTNAME = config.get('hostname','none')
+ NTPHOST  = config.get('ntphost','127.0.0.1')
+ VOLDISK  = config.get('voldisk','md1')
+ HOST     = config.get('interfaces','')
+ PORT     = int(config.get('port','4949'))
 
 # Make dictionary
 PLUGINS=[]
@@ -603,7 +622,7 @@ def muninThread(conn,addr):
    if   args[0] == 'quit':
     break
    elif args[0] == 'version':
-    conn.sendall("munins node on " + HOSTNAME + " version: " + VERSION + "\n")
+    conn.sendall("munins node on " + HOSTNAME + " version: " + __version__ + "\n")
    elif args[0] == 'nodes':
     conn.sendall(HOSTNAME + "\n.\n")
    elif args[0] == 'list':
